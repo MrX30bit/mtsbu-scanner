@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071522"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Сканер ОСЦПВ"><meta name="mobile-web-app-capable" content="yes"><meta name="description" content="Сканер автомобільних номерів для переходу до перевірки страхування МТСБУ"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><title>Автоцивілка — сканер номерів</title><style>
 :root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;background:#071522;color:#f0f5fb;min-height:100dvh}html{background:#071522} main{padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(60px,env(safe-area-inset-bottom))}main{max-width:650px;margin:auto;padding:20px 16px 60px}h1{font-size:24px;margin:12px 0 5px}p{line-height:1.45;color:#a9bbcd}.card{background:#102438;border:1px solid #2b465d;border-radius:18px;padding:15px;margin:15px 0}.camera{position:relative;overflow:hidden;background:#01070a;aspect-ratio:4/3;border-radius:14px}.camera video{width:100%;height:100%;object-fit:cover}.aim.confirmed{border-color:#32d997;box-shadow:0 0 0 100vmax #0003,0 0 18px #32d99766}.aim.pending{border-color:#ffd66b}.aim{position:absolute;left:8%;top:39%;width:84%;height:22%;border:2px solid #48d4fc;border-radius:7px;box-shadow:0 0 0 100vmax #0003;pointer-events:none}.aim span{position:absolute;bottom:-29px;left:0;font-size:12px;color:#fff;background:#071522a8;padding:3px 6px}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}button,a.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;background:#35a9ea;color:#06101b;border:0;border-radius:11px;padding:13px 15px;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer}button.secondary,a.secondary{background:#263c51;color:#edf6ff}button:disabled{opacity:.55;cursor:not-allowed}input{display:block;width:100%;background:#071522;color:#fff;border:1px solid #52718c;border-radius:11px;padding:13px;font-size:24px;letter-spacing:2px;text-transform:uppercase}.status{font-size:14px;color:#b7cadc;min-height:22px;margin:9px 0}.fine{font-size:12px;color:#91a9bd}.pill{display:inline-block;padding:4px 8px;border-radius:25px;background:#244b5c;color:#b5ebff;font-size:12px}#frame{display:none}ol{padding-left:22px;color:#bacbda}li{margin:5px 0}label{display:block;margin:0 0 8px;color:#dce9f4}strong{color:white} .history{display:flex;flex-wrap:wrap;gap:7px}.history button{font-size:12px;padding:7px 10px}.zoom-panel{margin-top:12px;background:#091b2a;border-radius:12px;padding:12px}.zoom-row{display:flex;justify-content:space-between;align-items:center;gap:10px}.zoom-presets{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.zoom-presets button{flex:1;min-width:55px;padding:10px 8px}.zoom-presets button.active{background:#48d4fc;color:#051523}.zoom-panel input[type=range]{padding:0;width:100%;height:28px;accent-color:#48d4fc}.zoom-panel input[type=range]:disabled{opacity:.45}.camera video{transform-origin:center center}
-</style></head><body><main><span class="pill">Версія 3.3 • автофокус + масштаб камери</span><h1>Сканер номерів авто</h1><p>Наведіть задню камеру на номер, розпізнайте його й відкрийте офіційну перевірку страховки МТСБУ.</p><div class="card"><div class="camera"><video id="video" autoplay muted playsinline></video><div class="aim"><span>Номер має повністю бути в рамці</span></div></div><div id="focus-info" class="fine" role="status" aria-live="polite" style="margin-top:10px">Фокус: увімкніть камеру. На iPhone автоматичне фокусування може контролюватися самою iOS.</div><div class="zoom-panel"><div class="zoom-row"><strong>Масштаб камери</strong><strong id="zoom-value">1.0×</strong></div><div class="zoom-presets"><button type="button" class="secondary" data-zoom="1" disabled>1×</button><button type="button" class="secondary" data-zoom="2" disabled>2×</button><button type="button" class="secondary" data-zoom="3" disabled>3×</button><button type="button" class="secondary" data-zoom="5" disabled>5×</button></div><label for="zoom-range" class="fine">Наближення</label><input id="zoom-range" type="range" min="1" max="5" step="0.1" value="1" disabled aria-label="Масштаб камери"><div id="zoom-note" class="fine" aria-live="polite">Увімкніть камеру для масштабування.</div></div><div class="buttons"><button id="start">Увімкнути камеру</button><button id="stop" class="secondary" disabled>Вимкнути камеру</button><button id="scan" class="secondary" disabled>Розпізнати номер</button><button id="auto" class="secondary" disabled>Автосканування: вимк.</button></div><div id="quality" class="fine" aria-live="polite">Для точнішого зчитування тримайте iPhone нерухомо, уникайте відблисків.</div><div id="status" class="status" role="status">Камера ще не ввімкнена.</div><p id="hint" class="fine"></p><label for="photo" class="fine">Якщо Safari блокує відео, зніміть фото номера:</label><input id="photo" type="file" accept="image/*" capture="environment" style="font-size:14px;letter-spacing:normal;padding:8px" /></div><div class="card"><label for="plate">Розпізнаний номер (можна виправити)</label><input id="plate" placeholder="АА1234ВК" autocomplete="off" autocapitalize="characters" maxlength="14"><div class="buttons"><a id="check" class="btn" href="https://policy.mtsbu.ua/?SearchType=Contract" rel="noopener noreferrer" target="_blank">Відкрити перевірку МТСБУ ↗</a><button id="copy" class="secondary">Скопіювати номер</button></div><p class="fine">На сторінці МТСБУ вставте номер і виберіть дату. Цей прототип <strong>не отримує результату з бази автоматично</strong> та не визначає, чи є поліс чинним.</p></div><div class="card"><strong>Останні розпізнані номери (лише в цій вкладці)</strong><div id="history" class="history" style="margin-top:11px"></div></div><p class="fine">OCR використовує бібліотеку Tesseract.js через інтернет. В автоматичному режимі номер підтверджується двома збігами, у ручному режимі кандидат показується одразу; інші типи та нестандартні номери можуть не розпізнаватися. Зображення обробляється в браузері; це не офіційна програма МТСБУ. Зум камери може бути апаратним або цифровим; 5× доступне не на всіх пристроях. Автофокусом на iPhone здебільшого керує iOS; вебзастосунок не може примусово гарантувати фокусування. Не використовуйте як доказ відсутності страховки. Не скануйте під час керування авто. Для доступу до камери потрібен HTTPS-сайт (звичайний відкритий HTML-файл на iPhone може не дати доступу).</p><div class="card" id="install-help"><strong>Як встановити на iPhone</strong><p class="fine">Відкрийте сайт у Safari → Поділитися → На початковий екран → Додати. Після цього запускайте сканер із нової іконки. Камера потребує дозволу. Для розпізнавання потрібен інтернет.</p></div><canvas id="frame"></canvas></main><script>
-const video=document.getElementById('video'),statusEl=document.getElementById('status'),plateEl=document.getElementById('plate'),scanButton=document.getElementById('scan'),autoButton=document.getElementById('auto'),startButton=document.getElementById('start'),stopButton=document.getElementById('stop'),hint=document.getElementById('hint');let stream,worker,working=false,timer=null,history=[],votes=[],lastAccepted='',lastAcceptedAt=0,misses=0;const aim=document.querySelector('.aim'),quality=document.getElementById('quality');
+</style></head><body><main><span class="pill">Версія 3.4.1 • швидке розпізнавання без повторного збігу</span><h1>Сканер номерів авто</h1><p>Наведіть задню камеру на номер, розпізнайте його й відкрийте офіційну перевірку страховки МТСБУ.</p><div class="card"><div class="camera"><video id="video" autoplay muted playsinline></video><div class="aim"><span>Номер має повністю бути в рамці</span></div></div><div id="focus-info" class="fine" role="status" aria-live="polite" style="margin-top:10px">Фокус: увімкніть камеру. На iPhone автоматичне фокусування може контролюватися самою iOS.</div><div class="zoom-panel"><div class="zoom-row"><strong>Масштаб камери</strong><strong id="zoom-value">1.0×</strong></div><div class="zoom-presets"><button type="button" class="secondary" data-zoom="1" disabled>1×</button><button type="button" class="secondary" data-zoom="2" disabled>2×</button><button type="button" class="secondary" data-zoom="3" disabled>3×</button><button type="button" class="secondary" data-zoom="5" disabled>5×</button></div><label for="zoom-range" class="fine">Наближення</label><input id="zoom-range" type="range" min="1" max="5" step="0.1" value="1" disabled aria-label="Масштаб камери"><div id="zoom-note" class="fine" aria-live="polite">Увімкніть камеру для масштабування.</div></div><div class="buttons"><button id="start">Увімкнути камеру</button><button id="stop" class="secondary" disabled>Вимкнути камеру</button><button id="scan" class="secondary" disabled>Розпізнати номер</button><button id="auto" class="secondary" disabled>Автосканування: вимк.</button></div><div id="quality" class="fine" aria-live="polite">Для точнішого зчитування тримайте iPhone нерухомо, уникайте відблисків.</div><div id="status" class="status" role="status">Камера ще не ввімкнена.</div><p id="hint" class="fine"></p><label for="photo" class="fine">Якщо Safari блокує відео, зніміть фото номера:</label><input id="photo" type="file" accept="image/*" capture="environment" style="font-size:14px;letter-spacing:normal;padding:8px" /></div><div class="card"><label for="plate">Розпізнаний номер (можна виправити)</label><input id="plate" placeholder="АА1234ВК" autocomplete="off" autocapitalize="characters" maxlength="14"><div class="buttons"><a id="check" class="btn" href="https://policy.mtsbu.ua/?SearchType=Contract" rel="noopener noreferrer" target="_blank">Відкрити перевірку МТСБУ ↗</a><button id="copy" class="secondary">Скопіювати номер</button></div><p class="fine">На сторінці МТСБУ вставте номер і виберіть дату. Цей прототип <strong>не отримує результату з бази автоматично</strong> та не визначає, чи є поліс чинним.</p></div><div class="card"><strong>Останні розпізнані номери (лише в цій вкладці)</strong><div id="history" class="history" style="margin-top:11px"></div></div><p class="fine">Результат з одного кадру може містити помилки. Перевіряйте номер перед використанням. OCR використовує бібліотеку Tesseract.js через інтернет. В автоматичному режимі номер показується після першого успішного зчитування (результат потрібно перевіряти вручну); інші типи та нестандартні номери можуть не розпізнаватися. Зображення обробляється в браузері; це не офіційна програма МТСБУ. Зум камери може бути апаратним або цифровим; 5× доступне не на всіх пристроях. Автофокусом на iPhone здебільшого керує iOS; вебзастосунок не може примусово гарантувати фокусування. Не використовуйте як доказ відсутності страховки. Не скануйте під час керування авто. Для доступу до камери потрібен HTTPS-сайт (звичайний відкритий HTML-файл на iPhone може не дати доступу).</p><div class="card" id="install-help"><strong>Як встановити на iPhone</strong><p class="fine">Відкрийте сайт у Safari → Поділитися → На початковий екран → Додати. Після цього запускайте сканер із нової іконки. Камера потребує дозволу. Для розпізнавання потрібен інтернет.</p></div><canvas id="frame"></canvas></main><script>
+const video=document.getElementById('video'),statusEl=document.getElementById('status'),plateEl=document.getElementById('plate'),scanButton=document.getElementById('scan'),autoButton=document.getElementById('auto'),startButton=document.getElementById('start'),stopButton=document.getElementById('stop'),hint=document.getElementById('hint');let stream,worker,workerPromise=null,working=false,timer=null,autoActive=false,history=[],votes=[],lastAccepted='',lastAcceptedAt=0,misses=0;const aim=document.querySelector('.aim'),quality=document.getElementById('quality');
 const zoomRange=document.getElementById('zoom-range'),zoomValue=document.getElementById('zoom-value'),zoomNote=document.getElementById('zoom-note'),zoomPresets=[...document.querySelectorAll('[data-zoom]')];
 let zoomMode='digital',zoom=1,zoomTrack=null,zoomMin=1,zoomMax=5,zoomBusy=false,pendingZoom=null;
 function syncZoom(){zoomRange.value=String(zoom);zoomValue.textContent=zoom.toFixed(1)+'×';zoomPresets.forEach(b=>{b.classList.toggle('active',Math.abs(Number(b.dataset.zoom)-zoom)<.06);b.disabled=!stream||Number(b.dataset.zoom)>zoomMax+.01||Number(b.dataset.zoom)<zoomMin-.01});}
@@ -93,33 +93,19 @@ function accept(value,manual=false){
  status((manual?'З фото':'Підтверджено')+': '+value+'. Перевірте номер перед перевіркою МТСБУ.');
 }
 function castVote(value,manual=false){
- const now=Date.now();
- votes=votes.filter(x=>now-x.t<17000);
- votes.push({value,t:now});votes=votes.slice(-6);misses=0;
- const frequencies=new Map();
- for(const v of votes)frequencies.set(v.value,(frequencies.get(v.value)||0)+1);
- const ranked=[...frequencies.entries()].sort((a,b)=>b[1]-a[1]);
- const [best,count]=ranked[0];
- const runnerUp=ranked[1]?.[1]||0;
- if(manual){
-   plateEl.value=value;
-   status('Можливий номер: '+value+'. Перевірте його вручну або увімкніть автосканування для підтвердження.');
-   aim.classList.add('pending');
- }else if(count>=2 && count>runnerUp){
-   accept(best);votes=[];
- }else{
-   aim.classList.remove('confirmed');aim.classList.add('pending');
-   status('Кандидат: '+best+' ('+count+'/2). Очікую повторного збігу.');
- }
+ // Одне успішне розпізнавання достатнє. Повторні спрацювання того самого
+ // номера обмежені в accept(), а OCR не є підтвердженням справжності номера.
+ accept(value,manual);
+ status('Зчитано: '+value+' (без повторного підтвердження). Перевірте символи вручну перед запитом до МТСБУ.');
 }
 function uncertain(){
  misses++;
  if(misses>=5){votes=[];misses=0}
  aim.classList.remove('confirmed');
- status(votes.length?'Кандидат ще не підтверджений. Зачекайте або скористайтесь ручним скануванням.':'Номер поки не знайдено. Розмістіть його ближче до центру рамки.');
+ status(votes.length?'Номер не визначено в цьому кадрі. Наведіть камеру ще раз.':'Номер поки не знайдено. Розмістіть його ближче до центру рамки.');
 }
 async function openCamera(){
-  hint.textContent='';
+  stopAuto();hint.textContent='';
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia){
     status('Safari не дозволяє відеокамеру в цьому режимі. Відкрийте застосунок за HTTPS-посиланням у Safari.');
     hint.textContent='Як тимчасова альтернатива — скористайтеся полем «Зняти фото» нижче.';
@@ -135,6 +121,7 @@ async function openCamera(){
     initZoom();
     void initFocus();
     scanButton.disabled=false;autoButton.disabled=false;stopButton.disabled=false;
+    void getWorker().catch(()=>{}); // завантажити OCR поки користувач наводить камеру
     startButton.textContent='Перезапустити камеру';
     votes=[];misses=0;aim.classList.remove('pending','confirmed');status('Камера увімкнена. Наведіть номер у рамку.');
   }catch(e){
@@ -161,6 +148,8 @@ async function scanPhoto(file){
 }
 async function getWorker(){
  if(worker)return worker;
+ if(workerPromise)return workerPromise;
+ workerPromise=(async()=>{
  status('Завантаження модуля розпізнавання (потрібен інтернет)…');
  if(!window.Tesseract)await new Promise((resolve,reject)=>{
    const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
@@ -170,6 +159,8 @@ async function getWorker(){
  worker=await Tesseract.createWorker('eng');
  await worker.setParameters({tessedit_char_whitelist:'ABCEHIKMOPTX0123456789АВЕІКМНОРСТХ',tessedit_pageseg_mode:Tesseract.PSM.SINGLE_LINE});
  return worker;
+ })();
+ try{return await workerPromise}finally{workerPromise=null}
 }
 // Рамка у CSS відповідає координатам відео з object-fit: cover.
 function capture(){
@@ -186,34 +177,28 @@ function capture(){
  const padX=w*.05,padY=h*.16;
  const sx=Math.max(0,x-padX),sy=Math.max(0,y-padY);
  const sw=Math.min(vw-sx,w+2*padX),sh=Math.min(vh-sy,h+2*padY);
- c.width=1280;c.height=Math.max(160,Math.round(1280*sh/sw));
+ // Менший кадр зменшує час OCR, не втрачаючи читабельності номера у рамці.
+ c.width=1024;c.height=Math.max(140,Math.round(1024*sh/sw));
  const ctx=c.getContext('2d',{willReadFrequently:true});
+ ctx.filter='grayscale(1) contrast(1.4)';
  ctx.drawImage(video,sx,sy,sw,sh,0,0,c.width,c.height);
- const img=ctx.getImageData(0,0,c.width,c.height);let sum=0,sumsq=0;
- for(let i=0;i<img.data.length;i+=4){
-   const v=img.data[i]*.299+img.data[i+1]*.587+img.data[i+2]*.114;
-   sum+=v;sumsq+=v*v;
-   const contrast=Math.max(0,Math.min(255,(v-128)*1.65+128));
-   img.data[i]=img.data[i+1]=img.data[i+2]=contrast;
- }
- const n=img.data.length/4,mean=sum/n,variance=sumsq/n-mean*mean;
- quality.textContent=mean<55?'Темне зображення — додайте освітлення.':mean>225?'Занадто яскраво — зменште відблиски.':variance<300?'Мало контрасту — наблизьте номер і тримайте телефон рівно.':'Порада: номер має бути чітким, без відблисків і повністю у рамці.';
- ctx.putImageData(img,0,0);return c;
+ ctx.filter='none';
+ quality.textContent='Швидкий режим: тримайте номер повністю в рамці, без відблисків.';
+ return c;
 }
 async function scan(){
  if(working||!stream)return;working=true;scanButton.disabled=true;
  try{
   const w=await getWorker();status('Розпізнаю номер у рамці…');
-  await w.setParameters({tessedit_pageseg_mode:Tesseract.PSM.SINGLE_LINE});
   const r=await w.recognize(capture());const detected=identify(r.data.text);
-  if(detected){castVote(detected,!timer)}
+  if(detected){castVote(detected,!autoActive)}
   else{uncertain()}
  }catch(e){status('Помилка розпізнавання: '+e.message)}
- finally{working=false;scanButton.disabled=!stream}
+ finally{working=false;scanButton.disabled=!stream; if(autoActive&&stream)timer=setTimeout(scan,350)}
 }
 function renderHistory(){const node=document.getElementById('history');node.replaceChildren();history.forEach(v=>{const b=document.createElement('button');b.className='secondary';b.textContent=v;b.onclick=()=>plateEl.value=v;node.appendChild(b)})}
-function stopAuto(){if(timer)clearInterval(timer);timer=null;votes=[];misses=0;autoButton.textContent='Автосканування: вимк.'}
-startButton.onclick=openCamera;stopButton.onclick=stopCamera;document.getElementById('photo').onchange=e=>scanPhoto(e.target.files?.[0]);scanButton.onclick=scan;autoButton.onclick=()=>{if(timer){stopAuto();return}autoButton.textContent='Автосканування: увімк.';votes=[];misses=0;scan();timer=setInterval(scan,2600)};
+function stopAuto(){autoActive=false;if(timer)clearTimeout(timer);timer=null;votes=[];misses=0;autoButton.textContent='Автосканування: вимк.'}
+startButton.onclick=openCamera;stopButton.onclick=stopCamera;document.getElementById('photo').onchange=e=>scanPhoto(e.target.files?.[0]);scanButton.onclick=scan;autoButton.onclick=()=>{if(autoActive){stopAuto();return}autoActive=true;autoButton.textContent='Автосканування: увімк.';votes=[];misses=0;scan()};
 document.getElementById('copy').onclick=async()=>{let s=plateEl.value.trim();if(!s)return status('Спочатку розпізнайте або введіть номер.');try{await navigator.clipboard.writeText(s);status('Номер скопійовано: '+s)}catch(e){plateEl.select();status('Виділіть та скопіюйте номер вручну.')}};
 document.getElementById('check').onclick=()=>{if(plateEl.value.trim())status('Скопіюйте номер '+plateEl.value.trim()+' та вставте його на сайті МТСБУ.');else status('На сайті МТСБУ введіть державний номер вручну.')};
 window.addEventListener('pagehide',()=>{stopAuto();stream?.getTracks().forEach(t=>t.stop());worker?.terminate()});
