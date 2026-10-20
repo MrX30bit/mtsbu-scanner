@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071522"><title>Автоцивілка — сканер номерів</title><style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif}*{box-sizing:border-box}body{margin:0;background:#071522;color:#f0f5fb}main{max-width:650px;margin:auto;padding:20px 16px 60px}h1{font-size:24px;margin:12px 0 5px}p{line-height:1.45;color:#a9bbcd}.card{background:#102438;border:1px solid #2b465d;border-radius:18px;padding:15px;margin:15px 0}.camera{position:relative;overflow:hidden;background:#01070a;aspect-ratio:4/3;border-radius:14px}.camera video{width:100%;height:100%;object-fit:cover}.aim{position:absolute;left:8%;top:39%;width:84%;height:22%;border:2px solid #48d4fc;border-radius:7px;box-shadow:0 0 0 100vmax #0003;pointer-events:none}.aim span{position:absolute;bottom:-29px;left:0;font-size:12px;color:#fff;background:#071522a8;padding:3px 6px}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}button,a.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;background:#35a9ea;color:#06101b;border:0;border-radius:11px;padding:13px 15px;font-weight:700;font-size:15px;text-decoration:none;cursor:pointer}button.secondary,a.secondary{background:#263c51;color:#edf6ff}button:disabled{opacity:.55;cursor:not-allowed}input{display:block;width:100%;background:#071522;color:#fff;border:1px solid #52718c;border-radius:11px;padding:13px;font-size:24px;letter-spacing:2px;text-transform:uppercase}.status{font-size:14px;color:#b7cadc;min-height:22px;margin:9px 0}.fine{font-size:12px;color:#91a9bd}.pill{display:inline-block;padding:4px 8px;border-radius:25px;background:#244b5c;color:#b5ebff;font-size:12px}#frame{display:none}ol{padding-left:22px;color:#bacbda}li{margin:5px 0}label{display:block;margin:0 0 8px;color:#dce9f4}strong{color:white} .history{display:flex;flex-wrap:wrap;gap:7px}.history button{font-size:12px;padding:7px 10px}
+</style></head><body><main><span class="pill">Прототип • iPhone / Safari</span><h1>Сканер номерів авто</h1><p>Наведіть задню камеру на номер, розпізнайте його й відкрийте офіційну перевірку страховки МТСБУ.</p><div class="card"><div class="camera"><video id="video" autoplay muted playsinline></video><div class="aim"><span>Помістіть номер у рамку</span></div></div><div class="buttons"><button id="start">Увімкнути камеру</button><button id="stop" class="secondary" disabled>Вимкнути камеру</button><button id="scan" class="secondary" disabled>Розпізнати номер</button><button id="auto" class="secondary" disabled>Автосканування: вимк.</button></div><div id="status" class="status" role="status">Камера ще не ввімкнена.</div><p id="hint" class="fine"></p><label for="photo" class="fine">Якщо Safari блокує відео, зніміть фото номера:</label><input id="photo" type="file" accept="image/*" capture="environment" style="font-size:14px;letter-spacing:normal;padding:8px" /></div><div class="card"><label for="plate">Розпізнаний номер (можна виправити)</label><input id="plate" placeholder="АА1234ВК" autocomplete="off" autocapitalize="characters" maxlength="14"><div class="buttons"><a id="check" class="btn" href="https://policy.mtsbu.ua/?SearchType=Contract" rel="noopener noreferrer" target="_blank">Відкрити перевірку МТСБУ ↗</a><button id="copy" class="secondary">Скопіювати номер</button></div><p class="fine">На сторінці МТСБУ вставте номер і виберіть дату. Цей прототип <strong>не отримує результату з бази автоматично</strong> та не визначає, чи є поліс чинним.</p></div><div class="card"><strong>Останні розпізнані номери (лише в цій вкладці)</strong><div id="history" class="history" style="margin-top:11px"></div></div><p class="fine">OCR використовує бібліотеку Tesseract.js через інтернет. Зображення обробляється в браузері; це не офіційна програма МТСБУ. Не використовуйте як доказ відсутності страховки. Не скануйте під час керування авто. Для доступу до камери потрібен HTTPS-сайт (звичайний відкритий HTML-файл на iPhone може не дати доступу).</p><canvas id="frame"></canvas></main><script>
+const video=document.getElementById('video'),statusEl=document.getElementById('status'),plateEl=document.getElementById('plate'),scanButton=document.getElementById('scan'),autoButton=document.getElementById('auto'),startButton=document.getElementById('start'),stopButton=document.getElementById('stop'),hint=document.getElementById('hint');let stream,worker,working=false,timer=null,history=[];
+function status(s){statusEl.textContent=s}
+function normalize(s){return (s||'').toUpperCase().replace(/[^A-ZА-ЯІЇЄ0-9]/g,'').replace(/[ABCEHIKMOPTX]/g,c=>({A:'А',B:'В',C:'С',E:'Е',H:'Н',I:'І',K:'К',M:'М',O:'О',P:'Р',T:'Т',X:'Х'}[c]||c))}
+function identify(raw){let s=normalize(raw);let m=s.match(/[АВЕІКМНОРСТХ]{2}[0-9]{4}[АВЕІКМНОРСТХ]{2}/);return m?m[0]:s.substring(0,12)}
+async function openCamera(){
+  hint.textContent='';
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia){
+    status('Safari не дозволяє відеокамеру в цьому режимі. Відкрийте застосунок за HTTPS-посиланням у Safari.');
+    hint.textContent='Як тимчасова альтернатива — скористайтеся полем «Зняти фото» нижче.';
+    return;
+  }
+  startButton.disabled=true;
+  try{
+    if(stream)stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    video.srcObject=stream;
+    video.setAttribute('playsinline','');
+    await video.play();
+    scanButton.disabled=false;autoButton.disabled=false;stopButton.disabled=false;
+    startButton.textContent='Перезапустити камеру';
+    status('Камера увімкнена. Наведіть її на номер у рамці.');
+  }catch(e){
+    let message=e?.name==='NotAllowedError'?'Доступ до камери заборонено. Safari → aA → Налаштування вебсайту → Камера → Дозволити.':
+      e?.name==='NotFoundError'?'На пристрої не знайдено доступну камеру.':
+      e?.name==='NotReadableError'?'Камера зайнята іншим застосунком. Закрийте його й спробуйте знову.':
+      'Помилка камери: '+(e.message||String(e));
+    status(message);
+    hint.textContent='Відкривайте HTTPS-адресу безпосередньо в Safari, а не HTML-файл у «Файлах» або в попередньому перегляді.';
+  }finally{startButton.disabled=false}
+}
+function stopCamera(){stopAuto();stream?.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;scanButton.disabled=true;autoButton.disabled=true;stopButton.disabled=true;startButton.textContent='Увімкнути камеру';status('Камеру вимкнено.')}
+async function scanPhoto(file){
+ if(!file)return;
+ try{
+  status('Розпізнаю номер із фото…');
+  const w=await getWorker();
+  const url=URL.createObjectURL(file);
+  try{const result=await w.recognize(url);const value=identify(result.data.text);if(value){plateEl.value=value;history=[value,...history.filter(v=>v!==value)].slice(0,8);renderHistory();status('Із фото розпізнано: '+value+'. Перевірте правильність.')}else status('Не вдалося прочитати номер із фото. Спробуйте чіткіше фото.')}finally{URL.revokeObjectURL(url)}
+ }catch(e){status('Помилка обробки фото: '+e.message)}
+}
+async function getWorker(){if(worker)return worker;status('Завантаження модуля розпізнавання…');if(!window.Tesseract)await new Promise((resolve,reject)=>{let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=resolve;s.onerror=()=>reject(new Error('Не завантажено OCR. Потрібен інтернет.'));document.head.append(s)});worker=await Tesseract.createWorker('eng');await worker.setParameters({tessedit_char_whitelist:'ABCEHIKMOPTX0123456789АВЕІКМНОРСТХ',tessedit_pageseg_mode:Tesseract.PSM.SINGLE_LINE});return worker}
+function capture(){const c=document.getElementById('frame'),vw=video.videoWidth,vh=video.videoHeight;if(!vw||!vh)throw Error('Камера не готова');const width=vw*.84,height=vh*.22; c.width=1500;c.height=220;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(video,vw*.08,vh*.39,width,height,0,0,c.width,c.height);const img=ctx.getImageData(0,0,c.width,c.height);for(let i=0;i<img.data.length;i+=4){let v=img.data[i]*.299+img.data[i+1]*.587+img.data[i+2]*.114;let contrast=Math.max(0,Math.min(255,(v-128)*1.8+128));img.data[i]=img.data[i+1]=img.data[i+2]=contrast}ctx.putImageData(img,0,0);return c}
+async function scan(){if(working||!stream)return;working=true;scanButton.disabled=true;try{const w=await getWorker();status('Розпізнаю номер…');const r=await w.recognize(capture());const detected=identify(r.data.text);if(detected){plateEl.value=detected;status('Розпізнано: '+detected+' — перевірте символи перед пошуком.');history=[detected,...history.filter(v=>v!==detected)].slice(0,8);renderHistory()}else status('Номер не розпізнано. Спробуйте підійти ближче або введіть вручну.')}catch(e){status('Помилка розпізнавання: '+e.message)}finally{working=false;scanButton.disabled=false}}
+function renderHistory(){const node=document.getElementById('history');node.replaceChildren();history.forEach(v=>{const b=document.createElement('button');b.className='secondary';b.textContent=v;b.onclick=()=>plateEl.value=v;node.appendChild(b)})}
+function stopAuto(){if(timer)clearInterval(timer);timer=null;autoButton.textContent='Автосканування: вимк.'}
+startButton.onclick=openCamera;stopButton.onclick=stopCamera;document.getElementById('photo').onchange=e=>scanPhoto(e.target.files?.[0]);scanButton.onclick=scan;autoButton.onclick=()=>{if(timer){stopAuto();return}autoButton.textContent='Автосканування: увімк.';scan();timer=setInterval(scan,3500)};
+document.getElementById('copy').onclick=async()=>{let s=plateEl.value.trim();if(!s)return status('Спочатку розпізнайте або введіть номер.');try{await navigator.clipboard.writeText(s);status('Номер скопійовано: '+s)}catch(e){plateEl.select();status('Виділіть та скопіюйте номер вручну.')}};
+document.getElementById('check').onclick=()=>{if(plateEl.value.trim())status('Скопіюйте номер '+plateEl.value.trim()+' та вставте його на сайті МТСБУ.');else status('На сайті МТСБУ введіть державний номер вручну.')};
+window.addEventListener('pagehide',()=>{stopAuto();stream?.getTracks().forEach(t=>t.stop());worker?.terminate()});
+if(!window.isSecureContext)hint.textContent='Увага: для відео з камери відкрийте цю сторінку за HTTPS у Safari. У режимі локального файлу скористайтеся знімком фото.';
+</script></body></html>
